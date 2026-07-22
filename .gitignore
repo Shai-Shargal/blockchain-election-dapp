@@ -1,0 +1,9 @@
+node_modules/
+.env
+blockchain/artifacts/
+blockchain/cache/
+blockchain/typechain-types/
+frontend/dist/
+frontend/node_modules/
+*.local
+.superpowers/
