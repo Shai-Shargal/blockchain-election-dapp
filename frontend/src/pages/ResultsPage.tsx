@@ -23,12 +23,17 @@ export default function ResultsPage() {
         setResults(sorted);
         setWinner(sorted[0]?.name ?? null);
       } catch (e: unknown) {
-        setError(e instanceof Error ? e.message : "Election may still be in progress.");
+        const msg = e instanceof Error ? e.message : "";
+        if (msg === "No MetaMask") {
+          setError("Please connect MetaMask to view results.");
+        } else {
+          setError("Results are not available yet — the election may still be in progress.");
+        }
       }
     })();
   }, [candidates, getResults]);
 
-  if (error) return <p style={{ color: "red" }}>Results not available yet: {error}</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <div style={{ padding: "1rem" }}>
