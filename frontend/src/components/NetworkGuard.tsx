@@ -1,7 +1,8 @@
 import { useWallet } from "../hooks/useWallet";
 
 export default function NetworkGuard({ children }: { children: React.ReactNode }) {
-  const { account, isCorrectNetwork, switchToSepolia } = useWallet();
+  const { account, isCorrectNetwork, initializing, switchToSepolia } = useWallet();
+  if (initializing) return <p>Loading wallet...</p>;
   if (!account) return <p>Please connect your wallet.</p>;
   if (!isCorrectNetwork) {
     return (

@@ -6,7 +6,7 @@ import NetworkGuard from "../components/NetworkGuard";
 import TxStatus from "../components/TxStatus";
 
 export default function AdminDashboard() {
-  const { isAdmin } = useWallet();
+  const { isAdmin, initializing } = useWallet();
   const { addCandidate, setMerkleRoot, setElectionTime, setIPFSCID, txStatus, txError } = useElection();
   const { buildFromCSV, root, uploadToIPFS } = useMerkle();
 
@@ -16,6 +16,7 @@ export default function AdminDashboard() {
   const [endDate, setEndDate] = useState("");
   const [csvFile, setCsvFile] = useState<File | null>(null);
 
+  if (initializing) return <p>Loading wallet...</p>;
   if (!isAdmin) return <p>Access denied. Connect with the admin wallet.</p>;
 
   const handleAddCandidate = async () => {
