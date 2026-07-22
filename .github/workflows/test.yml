@@ -1,0 +1,61 @@
+name: Tests
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  smart-contract-tests:
+    name: Smart Contract Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: blockchain
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: blockchain/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Hardhat tests
+        run: npx hardhat test
+
+  frontend-typecheck:
+    name: Frontend TypeScript Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env for build
+        run: |
+          echo "VITE_ELECTION_ADDRESS=0xeA97c7e23B1300ea9523A3630827C85336e2B12F" >> .env
+          echo "VITE_BAL_TOKEN_ADDRESS=0xab8f347351720Ce0Fa8527b6826149da6dB950C9" >> .env
+          echo "VITE_SEPOLIA_CHAIN_ID=11155111" >> .env
+          echo "VITE_ADMIN_ADDRESS=0x0000000000000000000000000000000000000000" >> .env
+
+      - name: TypeScript check & build
+        run: npm run build

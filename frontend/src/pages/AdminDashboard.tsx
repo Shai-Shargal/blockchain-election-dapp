@@ -5,9 +5,11 @@ import { useMerkle } from "../hooks/useMerkle";
 import NetworkGuard from "../components/NetworkGuard";
 import TxStatus from "../components/TxStatus";
 
+const TOPIC_LABELS = ["Economy", "Environment", "Education"];
+
 export default function AdminDashboard() {
   const { isAdmin, initializing } = useWallet();
-  const { addCandidate, setMerkleRoot, setElectionTime, setIPFSCID, txStatus, txError } = useElection();
+  const { candidates, addCandidate, setMerkleRoot, setElectionTime, setIPFSCID, txStatus, txError, txHash } = useElection();
   const { buildFromCSV, root, uploadToIPFS } = useMerkle();
 
   const [candName, setCandName] = useState("");
@@ -16,12 +18,30 @@ export default function AdminDashboard() {
   const [endDate, setEndDate] = useState("");
   const [csvFile, setCsvFile] = useState<File | null>(null);
 
-  if (initializing) return <p>Loading wallet...</p>;
-  if (!isAdmin) return <p>Access denied. Connect with the admin wallet.</p>;
+  if (initializing) {
+    return (
+      <div className="guard-center">
+        <div className="spinner" />
+        <p>Loading wallet…</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="guard-center">
+        <div className="guard-icon">🚫</div>
+        <h2>Access denied</h2>
+        <p>Connect with the admin wallet to access this dashboard.</p>
+      </div>
+    );
+  }
 
   const handleAddCandidate = async () => {
-    await addCandidate(candName, pos);
+    if (!candName.trim()) return;
+    await addCandidate(candName.trim(), pos);
     setCandName("");
+    setPos([3, 3, 3]);
   };
 
   const handleCSV = async () => {
@@ -31,7 +51,11 @@ export default function AdminDashboard() {
     buildFromCSV(addresses);
   };
 
-  const handleSetMerkleRoot = () => root && setMerkleRoot(root);
+  const handleSetTime = () => {
+    const s = Math.floor(new Date(startDate).getTime() / 1000);
+    const e = Math.floor(new Date(endDate).getTime() / 1000);
+    setElectionTime(s, e);
+  };
 
   const handleUploadIPFS = async () => {
     if (!csvFile) return;
@@ -39,45 +63,163 @@ export default function AdminDashboard() {
     if (cid) await setIPFSCID(cid);
   };
 
-  const handleSetTime = () => {
-    const s = Math.floor(new Date(startDate).getTime() / 1000);
-    const e = Math.floor(new Date(endDate).getTime() / 1000);
-    setElectionTime(s, e);
-  };
-
   return (
     <NetworkGuard>
-      <div style={{ padding: "1rem", maxWidth: 600 }}>
-        <h1>Admin Dashboard</h1>
-        <TxStatus status={txStatus} error={txError} />
+      <div className="page">
+        <div className="page-header">
+          <h1 className="page-title">Admin Dashboard</h1>
+          <p className="page-subtitle">Manage candidates, voter registry, and election schedule</p>
+        </div>
 
-        <section>
-          <h2>Add Candidate</h2>
-          <input placeholder="Name" value={candName} onChange={e => setCandName(e.target.value)} />
-          {[0, 1, 2].map(i => (
-            <label key={i}> Topic {i + 1}:
-              <input type="number" min={1} max={5} value={pos[i]}
-                onChange={e => { const p = [...pos] as [number,number,number]; p[i] = +e.target.value; setPos(p); }} />
-            </label>
-          ))}
-          <button onClick={handleAddCandidate}>Add Candidate</button>
-        </section>
+        <TxStatus status={txStatus} error={txError} txHash={txHash} />
 
-        <section>
-          <h2>Voter Registry</h2>
-          <input type="file" accept=".csv,.txt" onChange={e => setCsvFile(e.target.files?.[0] ?? null)} />
-          <button onClick={handleCSV}>Parse CSV</button>
-          {root && <p>Merkle Root: <code>{root.slice(0, 18)}...</code></p>}
-          <button onClick={handleSetMerkleRoot} disabled={!root}>Set Merkle Root on Chain</button>
-          <button onClick={handleUploadIPFS} disabled={!csvFile}>Upload CSV to IPFS & Set CID</button>
-        </section>
+        {/* Current Candidates */}
+        {candidates.length > 0 && (
+          <div className="card">
+            <div className="card-title">📋 Current Candidates ({candidates.length})</div>
+            <table className="results-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Economy</th>
+                  <th>Environment</th>
+                  <th>Education</th>
+                  <th>Votes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {candidates.map(c => (
+                  <tr key={c.id}>
+                    <td>{c.id}</td>
+                    <td style={{ color: "var(--text-h)", fontWeight: 500 }}>{c.name}</td>
+                    <td>{c.positions[0]}</td>
+                    <td>{c.positions[1]}</td>
+                    <td>{c.positions[2]}</td>
+                    <td>{String(c.voteCount)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-        <section>
-          <h2>Election Time</h2>
-          <label>Start: <input type="datetime-local" value={startDate} onChange={e => setStartDate(e.target.value)} /></label>
-          <label>End: <input type="datetime-local" value={endDate} onChange={e => setEndDate(e.target.value)} /></label>
-          <button onClick={handleSetTime}>Set Election Time</button>
-        </section>
+        {/* Add Candidate */}
+        <div className="card">
+          <div className="card-title">➕ Add Candidate</div>
+          <div className="form-group">
+            <label className="form-label">Candidate Name</label>
+            <input
+              className="form-input"
+              placeholder="e.g. Alice Green"
+              value={candName}
+              onChange={e => setCandName(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleAddCandidate()}
+            />
+          </div>
+          <div className="form-row">
+            {TOPIC_LABELS.map((label, i) => (
+              <div className="form-group" key={i}>
+                <label className="form-label">{label} (1–5)</label>
+                <input
+                  className="form-input"
+                  type="number"
+                  min={1}
+                  max={5}
+                  value={pos[i]}
+                  onChange={e => {
+                    const p = [...pos] as [number, number, number];
+                    p[i] = Math.min(5, Math.max(1, +e.target.value));
+                    setPos(p);
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="form-actions">
+            <button
+              className="btn btn-primary"
+              onClick={handleAddCandidate}
+              disabled={!candName.trim() || txStatus === "waiting" || txStatus === "pending"}
+            >
+              Add Candidate
+            </button>
+          </div>
+        </div>
+
+        {/* Voter Registry */}
+        <div className="card">
+          <div className="card-title">🌲 Voter Registry</div>
+          <div className="form-group">
+            <label className="form-label">Voter List (CSV — one address per line)</label>
+            <input
+              className="form-input"
+              type="file"
+              accept=".csv,.txt"
+              onChange={e => setCsvFile(e.target.files?.[0] ?? null)}
+              style={{ cursor: "pointer" }}
+            />
+          </div>
+          {root && (
+            <>
+              <div className="form-label" style={{ marginBottom: "0.25rem" }}>Merkle Root</div>
+              <div className="merkle-root">{root}</div>
+            </>
+          )}
+          <div className="form-actions">
+            <button className="btn btn-outline" onClick={handleCSV} disabled={!csvFile}>
+              Parse & Build Tree
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => root && setMerkleRoot(root)}
+              disabled={!root || txStatus === "waiting" || txStatus === "pending"}
+            >
+              Set Root On-Chain
+            </button>
+            <button
+              className="btn btn-outline"
+              onClick={handleUploadIPFS}
+              disabled={!csvFile || txStatus === "waiting" || txStatus === "pending"}
+            >
+              Upload to IPFS
+            </button>
+          </div>
+        </div>
+
+        {/* Election Time */}
+        <div className="card">
+          <div className="card-title">⏱️ Election Schedule</div>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Start Date & Time</label>
+              <input
+                className="form-input"
+                type="datetime-local"
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">End Date & Time</label>
+              <input
+                className="form-input"
+                type="datetime-local"
+                value={endDate}
+                onChange={e => setEndDate(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="form-actions">
+            <button
+              className="btn btn-primary"
+              onClick={handleSetTime}
+              disabled={!startDate || !endDate || txStatus === "waiting" || txStatus === "pending"}
+            >
+              Set Election Time
+            </button>
+          </div>
+        </div>
       </div>
     </NetworkGuard>
   );

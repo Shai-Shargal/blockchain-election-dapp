@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
 import VotePage from "./pages/VotePage";
@@ -9,13 +9,18 @@ import WalletConnect from "./components/WalletConnect";
 export default function App() {
   return (
     <BrowserRouter>
-      <nav style={{ padding: "1rem", borderBottom: "1px solid #ccc", display: "flex", gap: "1rem", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", gap: "1rem" }}>
-          <Link to="/">Home</Link>
-          <Link to="/admin">Admin</Link>
-          <Link to="/vote">Vote</Link>
-          <Link to="/questionnaire">Questionnaire</Link>
-          <Link to="/results">Results</Link>
+      <nav className="navbar">
+        <div className="navbar-left">
+          <NavLink to="/" className="navbar-brand">
+            🗳️ <span>Block</span>Vote
+          </NavLink>
+          <div className="navbar-links">
+            <NavLink to="/" end>Home</NavLink>
+            <NavLink to="/admin">Admin</NavLink>
+            <NavLink to="/vote">Vote</NavLink>
+            <NavLink to="/questionnaire">Questionnaire</NavLink>
+            <NavLink to="/results">Results</NavLink>
+          </div>
         </div>
         <WalletConnect />
       </nav>
