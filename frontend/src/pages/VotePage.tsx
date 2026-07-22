@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useWallet } from "../hooks/useWallet";
 import { useElection } from "../hooks/useElection";
-import { useMerkle } from "../hooks/useMerkle";
+import { useAutoLoadMerkle } from "../hooks/useAutoLoadMerkle";
 import NetworkGuard from "../components/NetworkGuard";
 import TxStatus from "../components/TxStatus";
 
 export default function VotePage() {
   const { account } = useWallet();
   const { candidates, hasVoted, vote, txStatus, txError } = useElection();
-  const { getProofFor } = useMerkle();
+  const { getProofFor, loading: merkleLoading, error: merkleError } = useAutoLoadMerkle();
   const [selected, setSelected] = useState<number | null>(null);
 
   const handleVote = async () => {
@@ -16,6 +16,23 @@ export default function VotePage() {
     const proof = getProofFor(account);
     await vote(selected, proof);
   };
+
+  if (merkleLoading) return (
+    <NetworkGuard>
+      <div style={{ padding: "1rem" }}>
+        <p>Loading voter registry from IPFS...</p>
+      </div>
+    </NetworkGuard>
+  );
+
+  if (merkleError) return (
+    <NetworkGuard>
+      <div style={{ padding: "1rem" }}>
+        <p style={{ color: "orange" }}>⚠️ {merkleError}</p>
+        <p>You may still vote if you have the voter registry locally (ask the admin).</p>
+      </div>
+    </NetworkGuard>
+  );
 
   return (
     <NetworkGuard>
