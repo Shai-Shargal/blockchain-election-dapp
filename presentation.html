@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlockVote — Decentralized Election DApp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f1117 0%, #161b22 100%);
+            color: #c9d1d9;
+            overflow: hidden;
+        }
+
+        .presentation {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide {
+            display: none;
+            width: 90%;
+            max-width: 1000px;
+            height: 90vh;
+            background: linear-gradient(135deg, #161b22 0%, #0d1117 100%);
+            border: 2px solid #7c5cfc;
+            border-radius: 8px;
+            padding: 60px;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #7c5cfc;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(124, 92, 252, 0.3);
+        }
+
+        h2 {
+            font-size: 2.5em;
+            color: #7c5cfc;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #7c5cfc;
+            padding-bottom: 15px;
+        }
+
+        h3 {
+            font-size: 1.5em;
+            color: #79c0ff;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        p, li {
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 12px;
+            color: #c9d1d9;
+        }
+
+        ul, ol {
+            margin-left: 30px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        code {
+            background: #0d1117;
+            color: #79c0ff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+        }
+
+        pre {
+            background: #0d1117;
+            color: #79c0ff;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border-left: 3px solid #7c5cfc;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #30363d;
+        }
+
+        th {
+            background: #0d1117;
+            color: #79c0ff;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: rgba(124, 92, 252, 0.1);
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+            color: #79c0ff;
+            margin-top: 20px;
+        }
+
+        .highlight {
+            background: rgba(124, 92, 252, 0.2);
+            padding: 20px;
+            border-left: 4px solid #7c5cfc;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .warning {
+            background: rgba(255, 165, 0, 0.1);
+            border-left: 4px solid #ffa500;
+        }
+
+        .success {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid #4caf50;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        button {
+            background: #7c5cfc;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(124, 92, 252, 0.3);
+        }
+
+        button:hover {
+            background: #6d4ddd;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(124, 92, 252, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            color: #7c5cfc;
+            font-size: 1.2em;
+        }
+
+        .logo {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="logo">🗳️</div>
+            <h1>BlockVote</h1>
+            <p class="subtitle">Decentralized Election DApp</p>
+
+            <div style="margin-top: 60px;">
+                <h3>Submitted by:</h3>
+                <p><strong>Shai Shargal</strong></p>
+
+                <h3 style="margin-top: 40px;">Project Details:</h3>
+                <p><strong>Type:</strong> Final Course Assignment (90-point Default Project)</p>
+                <p><strong>Date:</strong> July 2026</p>
+                <p><strong>Live Demo:</strong> <code>http://13.53.137.72</code></p>
+
+                <h3 style="margin-top: 40px;">Technology Stack:</h3>
+                <p>🔗 Solidity 0.8.24 + OpenZeppelin (Hardhat)<br>
+                   ⚛️ React 18 + TypeScript + Vite<br>
+                   🌐 Ethereum Sepolia Testnet<br>
+                   📦 IPFS via Pinata<br>
+                   ☁️ AWS EC2 + Nginx</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Known Bugs & Limitations -->
+        <div class="slide">
+            <h2>Known Bugs & Limitations</h2>
+
+            <div class="highlight warning">
+                <h3>1. Questionnaire Anonymity is UI-Only ⚠️</h3>
+                <p>The matched candidate ID is <strong>visible on-chain</strong> in transaction calldata.</p>
+                <ul>
+                    <li>UI hides the matched candidate <strong>before</strong> vote submission</li>
+                    <li>After confirmation, the result is revealed</li>
+                    <li>This is <strong>not cryptographically private</strong> — by design</li>
+                    <li>True anonymity requires zero-knowledge proofs (beyond scope)</li>
+                </ul>
+            </div>
+
+            <div class="highlight warning">
+                <h3>2. Git History Contains Old Secrets (RESOLVED)</h3>
+                <ul>
+                    <li>Private key was committed to <code>blockchain/.env</code> in early commits</li>
+                    <li>File is now properly in <code>.gitignore</code></li>
+                    <li>No active risk — credentials are testnet-only</li>
+                    <li>Fresh credentials deployed to Sepolia</li>
+                </ul>
+            </div>
+
+            <div class="highlight">
+                <h3>3. Missing Features (Intentional)</h3>
+                <ul>
+                    <li>No vote reversal or modification (votes are permanent)</li>
+                    <li>No multi-election support (single deployment)</li>
+                    <li>No DAO voting or delegation (out of scope)</li>
+                </ul>
+            </div>
+
+            <div class="highlight">
+                <h3>4. Contracts Not Verified on Etherscan (Minor)</h3>
+                <p>Contracts work and tests pass. Verification can be added post-submission.</p>
+            </div>
+        </div>
+
+        <!-- Slide 3: Installation & Setup -->
+        <div class="slide">
+            <h2>Installation & Setup</h2>
+
+            <h3>Prerequisites</h3>
+            <pre>Node.js >= 18
+npm >= 9
+MetaMask browser extension
+Sepolia testnet ETH (from faucet)</pre>
+
+            <h3>Step 1: Clone & Install</h3>
+            <pre>git clone https://github.com/Shai-Shargal/blockchain-election-dapp.git
+cd blockchain-election-dapp
+cd blockchain && npm install
+cd ../frontend && npm install</pre>
+
+            <h3>Step 2: Configure Environment</h3>
+            <pre>cd blockchain && cp .env.example .env
+cd ../frontend && cp .env.example .env
+# Fill in contract addresses (provided below)</pre>
+
+            <h3>Step 3: Run Tests</h3>
+            <pre>cd blockchain
+npx hardhat test
+# Expected: 28 passing tests in ~400ms</pre>
+
+            <h3>Step 4: Start Frontend</h3>
+            <pre>cd frontend && npm run dev
+# Opens: http://localhost:5173</pre>
+
+            <h3>Current Sepolia Deployment</h3>
+            <table>
+                <tr>
+                    <th>Contract</th>
+                    <th>Address</th>
+                </tr>
+                <tr>
+                    <td>Election</td>
+                    <td><code>0xeA97c7e23B1300ea9523A3630827C85336e2B12F</code></td>
+                </tr>
+                <tr>
+                    <td>BALToken</td>
+                    <td><code>0xab8f347351720Ce0Fa8527b6826149da6dB950C9</code></td>
+                </tr>
+                <tr>
+                    <td>Admin Wallet</td>
+                    <td><code>0x9D244f3b124085D9bCAfF1D77304b145BFFc749d</code></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Slide 4: Architecture -->
+        <div class="slide">
+            <h2>Architecture & Key Components</h2>
+
+            <h3>System Overview</h3>
+            <div class="highlight success">
+                <p>Frontend (React) → Web3.js → Ethereum Sepolia → IPFS (Pinata)</p>
+            </div>
+
+            <h3>Smart Contracts</h3>
+            <table>
+                <tr>
+                    <th>File</th>
+                    <th>Purpose</th>
+                    <th>Key Functions</th>
+                </tr>
+                <tr>
+                    <td><code>Election.sol</code></td>
+                    <td>Main election logic</td>
+                    <td>addCandidate, vote, getResults, winner</td>
+                </tr>
+                <tr>
+                    <td><code>BALToken.sol</code></td>
+                    <td>ERC-20 voter reward</td>
+                    <td>mint (restricted to Election)</td>
+                </tr>
+            </table>
+
+            <h3>Frontend Pages</h3>
+            <table>
+                <tr>
+                    <th>Page</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td>Admin Dashboard</td>
+                    <td>Add candidates, set times, upload voter registry</td>
+                </tr>
+                <tr>
+                    <td>Vote Page</td>
+                    <td>Direct candidate selection</td>
+                </tr>
+                <tr>
+                    <td>Questionnaire</td>
+                    <td>3-slider matching with Manhattan distance</td>
+                </tr>
+                <tr>
+                    <td>Results</td>
+                    <td>Winner banner + ranked candidates chart</td>
+                </tr>
+            </table>
+
+            <h3>Core Hooks</h3>
+            <ul>
+                <li><code>useWallet.ts</code> — MetaMask connection & admin detection</li>
+                <li><code>useElection.ts</code> — Contract read/write with fallback RPC</li>
+                <li><code>useAutoLoadMerkle.ts</code> — Auto-fetch voter CSV from IPFS</li>
+                <li><code>useMerkle.ts</code> — Merkle tree generation & IPFS upload</li>
+                <li><code>useBALBalance.ts</code> — ERC-20 balance display</li>
+            </ul>
+        </div>
+
+        <!-- Slide 5: Smart Contracts -->
+        <div class="slide">
+            <h2>Smart Contracts Deep Dive</h2>
+
+            <h3>Election.sol — Core Logic</h3>
+
+            <div class="highlight">
+                <p><strong>1. Candidate Management</strong></p>
+                <p>Admin adds candidates with name + 3 position scores (1-5)</p>
+            </div>
+
+            <div class="highlight">
+                <p><strong>2. Merkle Root Storage</strong></p>
+                <p>Eligible voter addresses hashed and stored on-chain. Voters prove eligibility with Merkle proof.</p>
+            </div>
+
+            <div class="highlight">
+                <p><strong>3. IPFS CID Storage</strong></p>
+                <p>Voter registry CSV stored on IPFS; CID recorded on-chain for verification.</p>
+            </div>
+
+            <div class="highlight">
+                <p><strong>4. Time-Gated Voting</strong></p>
+                <p>Admin sets start and end times. Votes rejected before start or after end.</p>
+            </div>
+
+            <div class="highlight success">
+                <p><strong>5. Voting Security (CEI Pattern)</strong></p>
+                <p>✅ Checks: time, candidate, double-vote, Merkle proof<br>
+                   ✅ Effects: mark voted, increment vote count<br>
+                   ✅ Interactions: mint 10 BAL tokens</p>
+            </div>
+
+            <h3>BALToken.sol — ERC-20 Rewards</h3>
+            <div class="highlight success">
+                <ul>
+                    <li>Immutable <code>minter</code> address = Election contract only</li>
+                    <li>10 BAL issued per valid vote</li>
+                    <li>No other addresses can mint</li>
+                </ul>
+            </div>
+
+            <h3>Test Coverage: 28/28 Passing ✅</h3>
+            <p>Covers: double-voting, Merkle validation, time windows, BAL minting, results</p>
+        </div>
+
+        <!-- Slide 6: End-to-End Demo -->
+        <div class="slide">
+            <h2>End-to-End Demonstration</h2>
+
+            <h3>The Complete Flow (8 Steps)</h3>
+
+            <div class="highlight">
+                <p><strong>Setup Phase</strong></p>
+                <ol>
+                    <li>Admin connects wallet → Admin Dashboard appears</li>
+                    <li>Admin adds 3 candidates with positions</li>
+                    <li>Admin uploads voter CSV → Merkle root + CID stored on-chain</li>
+                    <li>Admin sets election window (start + 3600 seconds)</li>
+                </ol>
+            </div>
+
+            <div class="highlight success">
+                <p><strong>Voting Phase</strong></p>
+                <ol start="5">
+                    <li>Voter 1 selects candidate directly → votes, receives 10 BAL</li>
+                    <li>Voter 2 uses questionnaire → system matches candidate, votes, receives 10 BAL</li>
+                </ol>
+            </div>
+
+            <div class="highlight success">
+                <p><strong>Results Phase</strong></p>
+                <ol start="7">
+                    <li>Election ends → voting window closes</li>
+                    <li>Results page shows: winner banner + bar chart + ranked table</li>
+                </ol>
+            </div>
+
+            <h3>Key Features Demonstrated</h3>
+            <ul>
+                <li>✅ Merkle Tree voter eligibility</li>
+                <li>✅ Time-gating prevents premature voting</li>
+                <li>✅ Double-vote prevention</li>
+                <li>✅ Automatic ERC-20 rewards</li>
+                <li>✅ Questionnaire matching algorithm</li>
+                <li>✅ Results gated until election ends</li>
+                <li>✅ Read-only access (no wallet needed for results)</li>
+            </ul>
+
+            <h3>Demo Status ✅</h3>
+            <p>Live on Sepolia testnet. All 8 steps executable and verified.</p>
+        </div>
+    </div>
+
+    <div class="slide-counter">
+        <span id="current-slide">1</span> / <span id="total-slides">6</span>
+    </div>
+
+    <div class="controls">
+        <button onclick="previousSlide()">← Previous</button>
+        <button onclick="nextSlide()">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[n].classList.add('active');
+            document.getElementById('current-slide').textContent = n + 1;
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            showSlide(currentSlide);
+        }
+
+        function previousSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(currentSlide);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') previousSlide();
+        });
+
+        document.getElementById('total-slides').textContent = totalSlides;
+    </script>
+</body>
+</html>

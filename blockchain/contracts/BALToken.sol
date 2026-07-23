@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 /// @title BALToken — ERC20 voting reward token
 /// @notice Only the Election contract (set as minter at deploy) can mint tokens.
 contract BALToken is ERC20 {
-    address public minter;
+    address public immutable minter;
 
     error NotMinter();
     error InvalidAddress();
