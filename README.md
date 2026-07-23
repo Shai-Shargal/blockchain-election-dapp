@@ -9,6 +9,12 @@ A fully on-chain election platform built on Ethereum. Voters are verified using 
 
 ---
 
+## 🚀 Live Demo
+
+**[http://13.53.137.72](http://13.53.137.72)** — Deployed on AWS EC2 with Nginx + Sepolia testnet
+
+---
+
 ## Live Deployment (Sepolia Testnet)
 
 | Contract | Address |
